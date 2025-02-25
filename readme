@@ -1,0 +1,5 @@
+///*** For frontend ***///
+npm install axios react-router-dom @mui/material @mui/icons-material @emotion/react @emotion/styled
+
+///*** For backend ***///
+pip instal requirements.txt
