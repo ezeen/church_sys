@@ -1,5 +1,13 @@
 ///*** For frontend ***///
 npm install axios react-router-dom @mui/material @mui/icons-material @emotion/react @emotion/styled
+# Install MUI Data Grid
+npm install @mui/x-data-grid
+
+# Install Chart.js and React ChartJS 2
+npm install chart.js react-chartjs-2
+
+# Install TypeScript types for Chart.js (if using TypeScript)
+npm install --save-dev @types/chart.js
 
 ///*** For backend ***///
 pip instal requirements.txt

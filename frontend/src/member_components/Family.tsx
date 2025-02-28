@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Button, Typography, Grid, Card, CardContent, TextField } from '@mui/material';
+import { Container, Button, Typography, Grid, Card, CardContent} from '@mui/material';
 import AddMember from './AddMember';
 import { User } from '../types';
 import api from '../utils/axiosConfig';
 import { useAuth } from '../context/AuthContext';
 
 interface Member extends User {
+    family_rank: string;
+    phone_number: string;
     isChild: boolean;
 }
 
@@ -56,12 +58,16 @@ const Family = ({ darkMode, toggleDarkMode }: { darkMode: boolean; toggleDarkMod
                 api.post('family-members/', {
                     ...member,
                     member_type: member.isChild ? 'child' : 'adult',
-                    primary_user: user.email
+                    primary_user: user.email,
+                    family_rank: member.family_rank, // Add family_rank
+                    phone_number: member.phone_number?.startsWith('0') 
+                        ? `+254${member.phone_number.slice(1)}` 
+                        : member.phone_number // Format phone number
                 }, config)
             ));
             
             const newMembers = responses.map(response => response.data);
-            setMembers([...members, ...tempMembers]);
+            setMembers([...members, ...newMembers]);
             setTempMembers([]);
             alert('Members saved successfully!');
         } catch (error) {
@@ -119,60 +125,27 @@ const Family = ({ darkMode, toggleDarkMode }: { darkMode: boolean; toggleDarkMod
 };
 
 const MemberCard = ({ member, setMembers }: { member: Member, setMembers: Function }) => {
-    const [editMode, setEditMode] = useState(false);
-    const [idNumber, setIdNumber] = useState(member.id_number || '');
     
     const age = new Date().getFullYear() - new Date(member.dob).getFullYear();
-    
-    const handleUpdate = async () => {
-        if (age >= 18 && idNumber) {
-            try {
-                await api.patch(`family-members/${member.email}/`, { id_number: idNumber });
-                setMembers((prev: { email: string; }[]) => prev.map((m: { email: string; }) => 
-                    m.email === member.email ? {...m, id_number: idNumber} : m
-                ));
-                setEditMode(false);
-            } catch (error) {
-                console.error('Update failed:', error);
-            }
-        }
-    };
 
     return (
         <Grid item xs={12} sm={6} md={4}>
             <Card>
-                <CardContent>
+            <CardContent>
                     <Typography variant="h6">
                         {member.first_name} {member.last_name}
                     </Typography>
                     <Typography>Email: {member.email}</Typography>
                     <Typography>DOB: {new Date(member.dob).toLocaleDateString()}</Typography>
                     <Typography>District: {member.district}</Typography>
+                    <Typography>Family Rank: {member.family_rank}</Typography>
+                    <Typography>Phone: {member.phone_number}</Typography>
+                    <Typography>ID: {member.id_number}</Typography>
                     
-                    {member.isChild ? (
-                        age >= 18 && (
-                            editMode ? (
-                                <>
-                                    <TextField
-                                        label="ID Number"
-                                        value={idNumber}
-                                        onChange={(e) => setIdNumber(e.target.value)}
-                                        size="small"
-                                        sx={{ mt: 1 }}
-                                    />
-                                    <Button onClick={handleUpdate} size="small">
-                                        Save
-                                    </Button>
-                                </>
-                            ) : (
-                                <Button onClick={() => setEditMode(true)} size="small">
-                                    Add ID Number
-                                </Button>
-                            )
-                        )
-                    ) : (
-                        <Typography>ID: {member.id_number}</Typography>
-                    )}
+                    {/* Keep the Edit button for future functionality */}
+                    <Button size="small" sx={{ mt: 1 }}>
+                        Edit
+                    </Button>
                 </CardContent>
             </Card>
         </Grid>

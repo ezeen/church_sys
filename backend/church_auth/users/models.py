@@ -11,6 +11,7 @@ class UserManager(BaseUserManager):
         user.set_password(password)
         user.save()
         return user
+
     def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
@@ -18,13 +19,17 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 class User(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(unique=True)
+    email = models.EmailField(unique=True, null=True, blank=True)
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     dob = models.DateField()
     id_number = models.CharField(max_length=20, null=True, blank=True)
     district = models.CharField(max_length=100)
     is_primary = models.BooleanField(default=False)
+    
+    # New fields
+    family_rank = models.CharField(max_length=50, null=True, blank=True)  # Family rank (e.g., Father, Mother, Child)
+    phone_number = models.CharField(max_length=15, null=True, blank=True)  # Phone number
     
     # Admin flags
     is_staff = models.BooleanField(default=False)  # Required for Django admin
@@ -62,7 +67,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     def age(self):
         today = date.today()
         return today.year - self.dob.year - ((today.month, today.day) < (self.dob.month, self.dob.day))
-    
 
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"
@@ -71,6 +75,4 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.first_name
     
     def __str__(self):
-        return self.email
-    
-
+        return self.email or f"{self.first_name} {self.last_name}"

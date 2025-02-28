@@ -13,13 +13,15 @@ import Family from '../member_components/Family';
 import Settings from '../member_components/Settings';
 import Profile from '../member_components/Profile';
 import AdminHome from '../admin_components/AdminHome';
+import AdminDashboard from '../admin_components/AdminDashboard';
 
 function ProtectedRoute({ children }: { children: JSX.Element }) {
     const { user } = useAuth();
-    return user ? children : <Navigate to="/home" replace />;
+    return user ? children : <Navigate to="/login" replace />;
 }
 
 const AppRouter = ({ darkMode, toggleDarkMode }: { darkMode: boolean; toggleDarkMode: () => void }) => {
+    const { user } = useAuth();
 
     return (
         <BrowserRouter>
@@ -27,7 +29,11 @@ const AppRouter = ({ darkMode, toggleDarkMode }: { darkMode: boolean; toggleDark
                 <Route path="/login" element={<Login />} />
                 <Route path="/stafflogin" element={<StaffLogin />} />
                 <Route path='/register' element={<PrimaryRegistration />} />
-                <Route path="/" element={<ProtectedRoute><Home darkMode={darkMode} toggleDarkMode={toggleDarkMode}/></ProtectedRoute>}>
+                
+                {/* Redirect to login if not authenticated */}
+                <Route path="/" element={user ? <Navigate to="/home" replace /> : <Navigate to="/login" replace />} />
+
+                <Route path="/home" element={<ProtectedRoute><Home darkMode={darkMode} toggleDarkMode={toggleDarkMode}/></ProtectedRoute>}>
                     <Route index element={<Dashboard />} />
                     <Route path="events" element={<Events />} />
                     <Route path="sermons" element={<Sermons />} />
@@ -38,7 +44,7 @@ const AppRouter = ({ darkMode, toggleDarkMode }: { darkMode: boolean; toggleDark
                 </Route>
 
                 <Route path="/admin" element={<ProtectedRoute><AdminHome darkMode={darkMode} toggleDarkMode={toggleDarkMode}/></ProtectedRoute>}>
-                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="admindashboard" element={<AdminDashboard />} />
                     <Route path="events" element={<Events />} />
                     <Route path="sermons" element={<Sermons />} />
                     <Route path="district" element={<District />} />

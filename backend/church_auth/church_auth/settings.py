@@ -144,6 +144,11 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),  # Access token expires in 5 minutes
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),    # Refresh token expires in 1 day
+    'ROTATE_REFRESH_TOKENS': True,                  # Issue a new refresh token on each refresh
+    'BLACKLIST_AFTER_ROTATION': True,               # Blacklist old refresh tokens
+    'UPDATE_LAST_LOGIN': True,                      
     'USER_ID_FIELD': 'email',
     'USER_ID_CLAIM': 'email',
     'AUTH_HEADER_TYPES': ('Bearer',),

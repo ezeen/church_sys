@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography } from '@mui/material';
+import { Box, TextField, Button, Typography, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
 import api from '../utils/axiosConfig';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,17 +12,30 @@ const PrimaryRegistration = () => {
         id_number: '',
         district: '',
         password: '',
-        confirm_password: ''
+        confirm_password: '',
+        family_rank: '', // New field
+        phone_number: '' // New field
     });
 
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Format phone number to include +254 prefix
+        const formattedPhoneNumber = formData.phone_number.startsWith('0') 
+            ? `+254${formData.phone_number.slice(1)}` 
+            : formData.phone_number;
+
+        const payload = {
+            ...formData,
+            phone_number: formattedPhoneNumber // Replace with formatted phone number
+        };
+
         try {
             const response = await api.post(
                 'register/primary/', 
-                formData
+                payload
             );
             console.log('Registration successful:', response.data);
             alert('Registration successful!');
@@ -61,6 +74,29 @@ const PrimaryRegistration = () => {
             <TextField fullWidth margin="normal" label="District" required
                 value={formData.district} 
                 onChange={e => setFormData({...formData, district: e.target.value})} />
+            
+            {/* Family Rank Dropdown */}
+            <FormControl fullWidth margin="normal" required>
+                <InputLabel>Family Rank</InputLabel>
+                <Select
+                    value={formData.family_rank}
+                    label="Family Rank"
+                    onChange={e => setFormData({...formData, family_rank: e.target.value})}
+                >
+                    <MenuItem value="Father">Father</MenuItem>
+                    <MenuItem value="Mother">Mother</MenuItem>
+                    <MenuItem value="Son">Son</MenuItem>
+                    <MenuItem value="Daughter">Daughter</MenuItem>
+                </Select>
+            </FormControl>
+            
+            {/* Phone Number Field */}
+            <TextField fullWidth margin="normal" label="Phone Number" required
+                value={formData.phone_number} 
+                onChange={e => setFormData({...formData, phone_number: e.target.value})}
+                inputProps={{ pattern: "^0[0-9]{9}$", title: "Phone number must start with 0 and be 10 digits long (e.g., 0712345678)" }}
+                helperText="Enter your phone number starting with 0 (e.g., 0712345678)"
+            />
             
             <TextField fullWidth margin="normal" label="Password" type="password" required
                 value={formData.password} 

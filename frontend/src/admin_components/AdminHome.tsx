@@ -34,7 +34,7 @@ import {
     };
   
     const navigationItems = [
-      { text: 'Dashboard', icon: <DashboardIcon />, path: 'dashboard' }, // Empty path for index
+      { text: 'Dashboard', icon: <DashboardIcon />, path: 'admindashboard' }, // Empty path for index
       { text: 'Events', icon: <AudienceIcon />, path: 'events' },
       { text: 'Sermons', icon: <PostsIcon />, path: 'sermons' },
       { text: 'District', icon: <SchedulesIcon />, path: 'district' },

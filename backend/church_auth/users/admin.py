@@ -1,32 +1,39 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import User
+from datetime import date
 
 class CustomUserAdmin(UserAdmin):
     model = User
     
-    # Fix 1: Update ordering to use email instead of username
+    # Order users by email
     ordering = ('email',)
     
-    # Fix 2: Update list_display to match our model
+    # Fields to display in the list view
     list_display = (
         'email', 
         'first_name', 
         'last_name', 
+        'is_adult_or_child',  # Custom method to display adult/child
+        'family_rank', 
+        'phone_number', 
         'is_staff', 
         'is_superuser', 
-        'is_super_admin'
+        'is_super_admin',
+        'is_primary'
     )
     
-    # Fix 3: Update list_filter to match our model
+    # Fields to filter by in the list view
     list_filter = (
         'is_staff', 
         'is_superuser', 
         'is_super_admin', 
-        'is_primary'
+        'is_primary',
+        'family_rank',  # Add family_rank to filters
+        'district'      # Add district to filters
     )
     
-    # Fix 4: Update fieldsets to match our model
+    # Fields to display in the edit form
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Personal Info', {
@@ -35,7 +42,9 @@ class CustomUserAdmin(UserAdmin):
                 'last_name', 
                 'dob', 
                 'id_number', 
-                'district'
+                'district',
+                'family_rank',  # Add family_rank
+                'phone_number'  # Add phone_number
             )
         }),
         ('Permissions', {
@@ -49,10 +58,10 @@ class CustomUserAdmin(UserAdmin):
                 'user_permissions'
             ),
         }),
-        ('Important dates', {'fields': ('last_login',)}),
+        ('Important dates', {'fields': ('last_login',)}),  # Removed date_joined
     )
     
-    # Fix 5: Update add_fieldsets for creating users
+    # Fields to display in the add form
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
@@ -63,15 +72,27 @@ class CustomUserAdmin(UserAdmin):
                 'first_name', 
                 'last_name', 
                 'dob', 
-                'district'
+                'id_number', 
+                'district',
+                'family_rank',  # Add family_rank
+                'phone_number'  # Add phone_number
             ),
         }),
     )
     
-    # Fix 6: Update search fields
-    search_fields = ('email', 'first_name', 'last_name')
+    # Fields to search by in the list view
+    search_fields = ('email', 'first_name', 'last_name', 'phone_number', 'district')
     
-    # Fix 7: Update filter_horizontal for permissions
+    # Enable horizontal filtering for groups and permissions
     filter_horizontal = ('groups', 'user_permissions',)
+    
+    # Custom method to display whether a user is an adult or a child
+    def is_adult_or_child(self, obj):
+        if obj.dob:
+            age = (date.today() - obj.dob).days // 365
+            return 'Child' if age < 18 else 'Adult'
+        return 'Unknown'
+    is_adult_or_child.short_description = 'Adult/Child'
 
+# Register the User model with the custom admin class
 admin.site.register(User, CustomUserAdmin)

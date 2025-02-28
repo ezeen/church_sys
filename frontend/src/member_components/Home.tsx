@@ -21,15 +21,16 @@ import {
   Help as HelpIcon,
   ExitToApp as LogoutIcon,
 } from '@mui/icons-material';
+import { useAuth } from '../context/AuthContext';
 
 
 const Home = ({ darkMode, toggleDarkMode }: { darkMode: boolean; toggleDarkMode: () => void }) => {
 
   const navigate = useNavigate();
-
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem('access_token');
+    logout();
     navigate('/login');
   };
 

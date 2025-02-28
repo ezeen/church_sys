@@ -14,7 +14,11 @@ class PrimaryUserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'dob', 'id_number', 'district', 'password', 'confirm_password', 'is_primary']
+        fields = [
+            'email', 'first_name', 'last_name', 'dob', 'id_number', 'district', 
+            'password', 'confirm_password', 'is_primary', 'family_rank', 'phone_number',
+            'is_staff', 'is_super_admin', 'is_superuser'
+        ]
 
     def validate_dob(self, value):
         today = date.today()
@@ -49,8 +53,16 @@ class FamilyMemberSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'dob', 'id_number', 'district', 'member_type']
-        extra_kwargs = {'id_number': {'required': False}, 'email': {'required': False}}
+        fields = [
+            'email', 'first_name', 'last_name', 'dob', 'id_number', 'district', 
+            'member_type', 'family_rank', 'phone_number'
+        ]
+        extra_kwargs = {
+            'id_number': {'required': False}, 
+            'email': {'required': False},
+            'family_rank': {'required': False},
+            'phone_number': {'required': False}
+        }
 
     def validate(self, data):
         member_type = data.get('member_type')
@@ -127,3 +139,15 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data['is_primary'] = self.user.is_primary
         return data
         
+class CurrentUserViewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            'email',
+            'first_name',
+            'last_name',
+            'is_staff',
+            'is_superuser',
+            'is_super_admin',  # Make sure this matches your model field name
+            # ... other fields you need
+        ]

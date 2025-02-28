@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Grid, TextField, Typography, Card, CardContent } from '@mui/material';
+import { Button, Grid, TextField, Typography, Card, CardContent, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { Member } from '../types';
 
 const AddMember = ({ tempMembers, setTempMembers, onSave }: { 
@@ -13,48 +13,36 @@ const AddMember = ({ tempMembers, setTempMembers, onSave }: {
     const handleAdd = () => {
         // Validate required fields based on member type
         const requiredFields = {
-          adult: ['first_name', 'last_name', 'dob', 'district', 'id_number', 'email'],
-          child: ['first_name', 'last_name', 'dob', 'district']
+            adult: ['first_name', 'last_name', 'dob', 'district', 'id_number', 'email', 'family_rank'],
+            child: ['first_name', 'last_name', 'dob', 'district', 'family_rank']
         };
       
         const missingFields = memberType === 'adult' 
-          ? requiredFields.adult.filter(field => !newMember[field as keyof typeof newMember])
-          : requiredFields.child.filter(field => !newMember[field as keyof typeof newMember]);
+            ? requiredFields.adult.filter(field => !newMember[field as keyof typeof newMember])
+            : requiredFields.child.filter(field => !newMember[field as keyof typeof newMember]);
       
         if (missingFields.length > 0) {
-          alert(`Missing required fields: ${missingFields.join(', ')}`);
-          return;
+            alert(`Missing required fields: ${missingFields.join(', ')}`);
+            return;
         }
       
         // Format date to YYYY-MM-DD
         const formattedDob = new Date(newMember.dob!).toISOString().split('T')[0];
       
+        // Format phone number if provided
+        const formattedPhoneNumber = newMember.phone_number?.startsWith('0') 
+            ? `+254${newMember.phone_number.slice(1)}` 
+            : newMember.phone_number;
+
         setTempMembers([...tempMembers, {
-          ...newMember as Member,
-          dob: formattedDob,
-          isChild: memberType === 'child'
+            ...newMember as Member,
+            dob: formattedDob,
+            phone_number: formattedPhoneNumber,
+            isChild: memberType === 'child'
         }]);
         
         setNewMember({});
         setMemberType(undefined);
-    };
-
-    // Date validation
-    const isValidDate = (dateString: string): boolean => {
-        const regex = /^\d{2}-\d{2}-\d{4}$/;
-        if (!regex.test(dateString)) return false;
-        
-        const [month, day, year] = dateString.split('-').map(Number);
-        const date = new Date(year, month - 1, day);
-        return date.getFullYear() === year && 
-            date.getMonth() === month - 1 && 
-            date.getDate() === day;
-    };
-
-    // Date formatting
-    const formatDateToISO = (dateString: string): string => {
-        const [month, day, year] = dateString.split('-');
-        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
     };
 
     return (
@@ -121,6 +109,31 @@ const AddMember = ({ tempMembers, setTempMembers, onSave }: {
                                     fullWidth
                                     value={newMember.district || ''}
                                     onChange={(e) => setNewMember({...newMember, district: e.target.value})}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <FormControl fullWidth>
+                                    <InputLabel>Family Rank</InputLabel>
+                                    <Select
+                                        value={newMember.family_rank || ''}
+                                        label="Family Rank"
+                                        onChange={(e) => setNewMember({...newMember, family_rank: e.target.value as string})}
+                                    >
+                                        <MenuItem value="Father">Father</MenuItem>
+                                        <MenuItem value="Mother">Mother</MenuItem>
+                                        <MenuItem value="Son">Son</MenuItem>
+                                        <MenuItem value="Daughter">Daughter</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="Phone Number"
+                                    fullWidth
+                                    value={newMember.phone_number || ''}
+                                    onChange={(e) => setNewMember({...newMember, phone_number: e.target.value})}
+                                    inputProps={{ pattern: "^0[0-9]{9}$", title: "Phone number must start with 0 and be 10 digits long (e.g., 0712345678)" }}
+                                    helperText={memberType === 'child' ? "Optional" : "Enter your phone number starting with 0 (e.g., 0712345678)"}
                                 />
                             </Grid>
                             {memberType === 'adult' && (

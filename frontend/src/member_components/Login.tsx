@@ -5,34 +5,37 @@ import RegisterLink from './RegisterLink';
 import AdminLink from './AdminLink';
 import { safeLocalStorage } from '../utils/storage';
 import api from '../utils/axiosConfig';
-import { User } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [user, setUser] = useState<User | null>(null);
     const navigate = useNavigate();
+    const { login } = useAuth(); // Use AuthContext to handle login
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+
         try {
-            const response = await api.post('token/', { email, password });
-            
-            if (!response.data.access || !response.data.refresh) {
-                throw new Error('Invalid server response');
-            }
-            
-            safeLocalStorage.setItem('access_token', response.data.access);
-            safeLocalStorage.setItem('refresh_token', response.data.refresh);
-            
-            const userResponse = await api.get('user/me/');
-            setUser(userResponse.data);
-            navigate('/');
+            // Call the login function from AuthContext
+            await login(email, password); // Pass email and password as arguments
+
+            // Redirect to home page after successful login
+            navigate('/home');
         } catch (error: any) {
-            const message = error.response?.data?.detail || error.message;
-            setError(message || 'Login failed. Please try again.');
+            let message = 'Login failed. Please try again.';
+            if (error.response) {
+                if (error.response.status === 401) {
+                    message = 'Invalid email or password.';
+                } else {
+                    message = error.response.data.detail || message;
+                }
+            } else if (error.message) {
+                message = error.message;
+            }
+            setError(message);
         }
     };
 
@@ -49,6 +52,11 @@ const Login = () => {
                 <Typography component="h1" variant="h5">
                     Sign in
                 </Typography>
+                {error && (
+                    <Typography color="error" sx={{ mt: 2 }}>
+                        {error}
+                    </Typography>
+                )}
                 <Box component="form" onSubmit={handleLogin} sx={{ mt: 1 }}>
                     <TextField
                         margin="normal"

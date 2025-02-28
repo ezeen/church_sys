@@ -6,6 +6,8 @@ export interface User {
     id_number?: string;
     district: string;
     is_primary: boolean;
+    family_rank: string;
+    phone_number: string;
 }
 
 export interface Member extends User {
